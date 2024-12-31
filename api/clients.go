@@ -161,8 +161,16 @@ func GetClash(c *gin.Context) {
 		c.Writer.WriteString("读取错误")
 		return
 	}
-	urls := []string{}
+	var configs node.SqlConfig
+	err = json.Unmarshal([]byte(sub.Config), &configs)
+	if err != nil {
+		c.Writer.WriteString("配置读取错误")
+		return
+	}
+	allProxies := []node.Proxy{}
 	for _, v := range sub.Nodes {
+		urls := []string{}
+
 		switch {
 		// 如果包含多条节点
 		case strings.Contains(v.Link, ","):
@@ -185,15 +193,18 @@ func GetClash(c *gin.Context) {
 		default:
 			urls = append(urls, v.Link)
 		}
+
+		proxies, err := node.GenerateProxies(urls, configs, v.Name)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		allProxies = append(allProxies, proxies...)
+
 	}
 
-	var configs node.SqlConfig
-	err = json.Unmarshal([]byte(sub.Config), &configs)
-	if err != nil {
-		c.Writer.WriteString("配置读取错误")
-		return
-	}
-	DecodeClash, err := node.EncodeClash(urls, configs)
+	//DecodeClash, err := node.EncodeClash(urls, configs)
+	DecodeClash, err := node.DecodeClash(allProxies, configs.Clash)
 	if err != nil {
 		c.Writer.WriteString(err.Error())
 		return

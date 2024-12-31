@@ -84,7 +84,7 @@ func convertToInt(value interface{}) (int, error) {
 }
 
 // EncodeClash 用于生成 Clash 配置文件
-func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
+func GenerateProxies(urls []string, sqlconfig SqlConfig, appendName string) ([]Proxy, error) {
 	// 传入urls，解析urls，生成proxys
 	// yamlfile 为模板文件
 	var proxys []Proxy
@@ -335,8 +335,14 @@ func EncodeClash(urls []string, sqlconfig SqlConfig) ([]byte, error) {
 			proxys = append(proxys, tuicproxy)
 		}
 	}
+
+	for i := range proxys {
+		proxys[i].Name = fmt.Sprintf("%s@%s", appendName, proxys[i].Name)
+	}
+
 	// 生成Clash配置文件
-	return DecodeClash(proxys, sqlconfig.Clash)
+	//return DecodeClash(proxys, sqlconfig.Clash)
+	return proxys, nil
 }
 
 // DecodeClash 用于解析 Clash 配置文件
