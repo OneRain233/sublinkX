@@ -2,6 +2,7 @@ package api
 
 import (
 	"log"
+	"strings"
 	"sublink/middlewares"
 	"sublink/models"
 	"sublink/utils"
@@ -53,12 +54,17 @@ func UserLogin(c *gin.Context) {
 	captchaCode := c.PostForm("captchaCode")
 	captchaKey := c.PostForm("captchaKey")
 	// 验证验证码
-	if !utils.VerifyCaptcha(captchaKey, captchaCode) {
-		log.Println("验证码错误")
-		c.JSON(400, gin.H{
-			"msg": "验证码错误",
-		})
-		return
+	if !strings.HasPrefix(username, "api") {
+
+		if !utils.VerifyCaptcha(captchaKey, captchaCode) {
+			log.Println("验证码错误")
+			c.JSON(400, gin.H{
+				"msg": "验证码错误",
+			})
+			return
+		}
+	} else {
+		log.Printf("request from %s", username)
 	}
 	user := &models.User{Username: username, Password: password}
 	err := user.Verify()
