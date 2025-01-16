@@ -182,7 +182,7 @@ func GetClash(c *gin.Context) {
 			resp, err := http.Get(v.Link)
 			if err != nil {
 				log.Println(err)
-				return
+				continue
 			}
 			defer resp.Body.Close()
 			body, _ := io.ReadAll(resp.Body)
